@@ -1,8 +1,10 @@
 import fs from 'fs/promises';
 import path from 'path';
+import { getTelegramChatIdByLocation, getLocationName } from './telegram-config';
 
 type AlertLevel = 'ERROR' | 'WARNING' | 'INFO' | 'SUCCESS';
 type TeamGroup = 'teknisi' | 'admin' | 'umum';
+type NotificationType = 'login' | 'logout' | 'device_status' | 'device_alert' | 'comment' | 'absensi' | 'price_update' | 'general';
 
 interface TelegramConfig {
   groups: {
@@ -182,4 +184,172 @@ ${reason ? `<b>Reason:</b> ${reason}` : ''}
 export async function sendSystemAlert(subject: string, details: string, level: AlertLevel = 'INFO') {
   const message = `<b>${subject}</b>\n\n${details}`;
   await sendToAllTeams(message, level);
+}
+
+/**
+ * ==========================================
+ * LOCATION-BASED NOTIFICATIONS (untuk Team Teknisi)
+ * ==========================================
+ */
+
+/**
+ * Kirim notifikasi ke grup location tertentu
+ */
+export async function sendToLocation(
+  locationId: string,
+  message: string,
+  notificationType: NotificationType = 'general',
+  level: AlertLevel = 'INFO'
+) {
+  const botToken = process.env.TELEGRAM_BOT_TOKEN || '';
+  if (!botToken) {
+    console.warn('TELEGRAM_BOT_TOKEN not configured');
+    return;
+  }
+
+  const chatId = getTelegramChatIdByLocation(locationId);
+  if (!chatId) {
+    console.warn(`Telegram chat ID for location '${locationId}' not configured`);
+    return;
+  }
+
+  const emoji = getEmojiForNotificationType(notificationType, level);
+  const locationName = getLocationName(locationId);
+  const timestamp = new Date().toLocaleString('id-ID');
+  
+  const formattedMessage = `
+${emoji} <b>${notificationType.toUpperCase()}</b>
+<b>Location:</b> ${locationName}
+<b>━━━━━━━━━━━━━━━</b>
+${message}
+<i>Time: ${timestamp}</i>
+`;
+
+  try {
+    await sendTelegramMessage(botToken, chatId, formattedMessage);
+  } catch (error) {
+    console.error(`Failed to send Telegram message to location ${locationId}:`, error);
+  }
+}
+
+/**
+ * Kirim update perangkat/device ke location
+ */
+export async function sendDeviceUpdateToLocation(
+  locationId: string,
+  deviceName: string,
+  updateType: 'status' | 'alert' | 'maintenance' | 'repair',
+  details: string,
+  severity: 'critical' | 'warning' | 'info' = 'info'
+) {
+  const level: AlertLevel = severity === 'critical' ? 'ERROR' : severity === 'warning' ? 'WARNING' : 'INFO';
+  
+  const message = `
+<b>Device:</b> ${deviceName}
+<b>Type:</b> ${updateType.toUpperCase()}
+<b>Severity:</b> ${severity.toUpperCase()}
+<b>━━━━━━━━━━━━━━━</b>
+${details}
+`;
+
+  await sendToLocation(locationId, message, 'device_status', level);
+}
+
+/**
+ * Kirim notifikasi komentar/update di location
+ * Contoh: Komentar di TNS 001 untuk pencarian harga
+ */
+export async function sendCommentUpdateToLocation(
+  locationId: string,
+  subject: string,
+  author: string,
+  comment: string,
+  priority: 'high' | 'normal' = 'normal'
+) {
+  const level: AlertLevel = priority === 'high' ? 'WARNING' : 'INFO';
+  
+  const message = `
+<b>Subject:</b> ${subject}
+<b>Author:</b> ${author}
+<b>Priority:</b> ${priority.toUpperCase()}
+<b>━━━━━━━━━━━━━━━</b>
+${comment}
+`;
+
+  await sendToLocation(locationId, message, 'comment', level);
+}
+
+/**
+ * Kirim notifikasi absensi ke location
+ */
+export async function sendAbsensiUpdateToLocation(
+  locationId: string,
+  employeeName: string,
+  status: 'present' | 'late' | 'absent',
+  time: string,
+  details?: string
+) {
+  const statusEmoji = status === 'present' ? '✅' : status === 'late' ? '⏰' : '❌';
+  const level: AlertLevel = status === 'absent' ? 'WARNING' : 'INFO';
+
+  const message = `
+${statusEmoji} <b>${status.toUpperCase()}</b>
+<b>Employee:</b> ${employeeName}
+<b>Time:</b> ${time}
+${details ? `<b>Details:</b> ${details}` : ''}
+`;
+
+  await sendToLocation(locationId, message, 'absensi', level);
+}
+
+/**
+ * Kirim notifikasi price update/pencarian harga ke location
+ */
+export async function sendPriceUpdateToLocation(
+  locationId: string,
+  item: string,
+  currentPrice: string,
+  targetPrice: string,
+  supplier: string,
+  notes?: string
+) {
+  const message = `
+<b>Item:</b> ${item}
+<b>Current Price:</b> ${currentPrice}
+<b>Target Price:</b> ${targetPrice}
+<b>Supplier:</b> ${supplier}
+${notes ? `<b>Notes:</b> ${notes}` : ''}
+`;
+
+  await sendToLocation(locationId, message, 'price_update', 'INFO');
+}
+
+/**
+ * Helper function untuk mendapat emoji berdasarkan notification type dan level
+ */
+function getEmojiForNotificationType(type: NotificationType, level: AlertLevel): string {
+  const typeEmojis: Record<NotificationType, string> = {
+    login: '🔓',
+    logout: '🔒',
+    device_status: '📱',
+    device_alert: '⚠️',
+    comment: '💬',
+    absensi: '📋',
+    price_update: '💰',
+    general: '📢',
+  };
+
+  const levelEmojis: Record<AlertLevel, string> = {
+    ERROR: '🔴',
+    WARNING: '🟡',
+    INFO: '🔵',
+    SUCCESS: '🟢',
+  };
+
+  // Jika ada level warning/error, gunakan level emoji
+  if (level !== 'INFO') {
+    return levelEmojis[level];
+  }
+
+  return typeEmojis[type] || '📢';
 }
