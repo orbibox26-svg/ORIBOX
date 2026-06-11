@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { addDeviceSession } from '../../../../lib/sessions';
-import { sendTelegramMessage } from '../../../../lib/telegram';
+import { sendLoginNotification } from '../../../../lib/telegram';
 
 type Body = {
   username?: string;
@@ -44,16 +44,12 @@ export async function POST(req: Request) {
       console.error('Failed to store device session', e);
     }
 
-    // Send Telegram notification (use env vars)
-    const botToken = process.env.TELEGRAM_BOT_TOKEN || '';
-    const chatId = process.env.TELEGRAM_CHAT_ID || '';
-    const msg = `Login detected:\nUser: ${session.username}\nIP: ${session.ip}\nAgent: ${session.userAgent || '-'}\nTime: ${session.createdAt}`;
-
-    if (botToken && chatId) {
-      sendTelegramMessage(botToken, chatId, msg).catch((err) => {
-        // eslint-disable-next-line no-console
-        console.error('Telegram notify failed', err);
-      });
+    // Send Telegram notification ke Team Admin
+    try {
+      await sendLoginNotification(session.username, session.ip, session.userAgent, session.createdAt);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Telegram notify failed', err);
     }
 
     const res = NextResponse.json({ ok: true });

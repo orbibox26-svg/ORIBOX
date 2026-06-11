@@ -1,0 +1,25 @@
+{
+  "groups": {
+    "teknisi": {
+      "name": "Team Teknisi",
+      "chatId": "Isi dengan Chat ID Telegram Grup Teknisi",
+      "description": "Alert untuk masalah device, system, dan maintenance"
+    },
+    "admin": {
+      "name": "Team Admin",
+      "chatId": "Isi dengan Chat ID Telegram Grup Admin",
+      "description": "Report absensi, user management, dan compliance"
+    },
+    "umum": {
+      "name": "Channel Umum",
+      "chatId": "Isi dengan Chat ID Telegram untuk notifikasi umum",
+      "description": "Notifikasi umum dan informasi penting"
+    }
+  },
+  "alertLevels": {
+    "ERROR": "🔴",
+    "WARNING": "🟡",
+    "INFO": "🔵",
+    "SUCCESS": "🟢"
+  }
+}
