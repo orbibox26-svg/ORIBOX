@@ -1,0 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+:root {
+  --accent: #3b82f6;
+  --bg-dark: #020617;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: var(--bg-dark);
+  color: #f1f5f9;
+  overflow: hidden;
+}
+
+/* Glassmorphism */
+.glass {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+}
+
+.mesh-gradient {
+  background-color: #020617;
+  background-image: radial-gradient(at 0% 0%, hsla(217,100%,15%,1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(210,100%,10%,1) 0, transparent 50%), radial-gradient(at 100% 100%, hsla(220,100%,5%,1) 0, transparent 50%), radial-gradient(at 0% 100%, hsla(215,100%,10%,1) 0, transparent 50%);
+}
+
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+
+.auth-card { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+
+.input-group input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.animate-in { animation: fadeIn 0.6s forwards; }
+
+.tg-otp-dot { width: 12px; height: 12px; border-radius: 50%; background: #334155; transition: all 0.3s ease; }
+.tg-otp-dot.active { background: #3b82f6; box-shadow: 0 0 10px #3b82f6; }
+
+/* Utility small tweaks used by the template */
+.rounded-2xl { border-radius: 1rem; }
+.rounded-3xl { border-radius: 1.5rem; }
+
+/* Light theme variables and overrides */
+:root {
+  --bg-light: #f8fafc;
+  --panel-light: rgba(255,255,255,0.9);
+  --muted-light: #64748b;
+  --text-light: #0f172a;
+}
+
+.light-theme body {
+  background-color: var(--bg-light) !important;
+  color: var(--text-light) !important;
+}
+
+.light-theme .glass {
+  background: var(--panel-light) !important;
+  border: 1px solid rgba(15,23,42,0.04) !important;
+  box-shadow: 0 6px 18px rgba(2,6,23,0.06) !important;
+  color: var(--text-light) !important;
+}
+
+.light-theme .mesh-gradient { background-color: var(--bg-light); }
+.light-theme .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; }
+.light-theme .text-zinc-500 { color: var(--muted-light) !important; }
+.light-theme .text-zinc-400 { color: rgba(100,116,139,0.9) !important; }
+.light-theme .bg-black\/40 { background-color: rgba(255,255,255,0.4) !important; }
+
+
