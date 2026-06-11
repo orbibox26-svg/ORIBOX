@@ -14,7 +14,7 @@ export const TELEGRAM_LOCATIONS: TelegramLocation[] = [
   {
     id: 'TNS001',
     name: 'Lokasi TNS 001',
-    chatId: 'MASUKKAN_CHAT_ID_TNS001_DI_SINI',
+    chatId: '-5131258468',
     description: 'Group Telegram untuk tim teknisi TNS 001'
   },
   {
